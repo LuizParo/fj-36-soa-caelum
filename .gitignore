@@ -31,3 +31,11 @@ buildNumber.properties
 .tern-project
 mvnw
 mvnw.cmd
+
+# Java
+build/
+*.class
+*.jar
+*.war
+*.ear
+hs_err_pid*
