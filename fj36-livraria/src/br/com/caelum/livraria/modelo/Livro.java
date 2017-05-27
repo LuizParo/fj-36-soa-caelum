@@ -8,12 +8,19 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 public class Livro implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 
+	@XmlTransient
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Integer id;
@@ -21,10 +28,13 @@ public class Livro implements Serializable{
 	private String titulo;
 	private String tituloCurto;
 	private String nomeAutor;
+	
+	@XmlTransient
 	private String imagem;
 	private BigDecimal valorEbook;
 	private BigDecimal valorImpresso; 
 
+	@XmlTransient
 	@Column(length=1000) 
 	private String descricao;
 
