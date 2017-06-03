@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.6.1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd">
+    <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8082" basePath="/fj36-pedidos" doc:name="HTTP Listener Configuration"/>
+    <expression-filter expression="#[xpath3(&quot;/item/formato/text()	=	'EBOOK'&quot;,	message.payloadAs(java.lang.String),'BOOLEAN')]" name="Expression" doc:name="Expression"/>
+    <flow name="fj36-pedidosFlow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/" allowedMethods="POST" doc:name="Pedidos Listener"/>
+        <logger message="Recebendo	XML:	#[message.payloadAs(java.lang.String)]" level="INFO" doc:name="Logger"/>
+        <response>
+            <set-payload value="&lt;resposta&gt;ok&lt;/resposta&gt;" doc:name="Set Payload"/>
+            <set-property propertyName="http.status" value="202" doc:name="Property"/>
+        </response>
+        <scatter-gather doc:name="Scatter-Gather">
+            <flow-ref name="financeiro_flow" doc:name="Financeiro Flow"/>
+            <flow-ref name="ebook_flow" doc:name="Ebook Flow"/>
+        </scatter-gather>
+    </flow>
+    <sub-flow name="ebook_flow">
+        <splitter expression="#[xpath3('//item', payload, 'NODESET')]" doc:name="Splitter"/>
+        <filter ref="Expression" doc:name="Filter Reference"/>
+        <json:xml-to-json-transformer doc:name="XML to JSON"/>
+        <logger message="Ebook	Flow: #[message.payloadAs(java.lang.String)]" level="INFO" doc:name="Logger"/>
+    </sub-flow>
+    <sub-flow name="financeiro_flow">
+        <mulexml:xslt-transformer xsl-file="/home/soa6719/workspace/fj36-pedidos/pedido-para-soap.xslt" maxIdleTransformers="2" maxActiveTransformers="5" doc:name="XSLT"/>
+        <logger message="Financeiro: #[message.payloadAs(java.lang.String)]" level="INFO" doc:name="Logger"/>
+    </sub-flow>
+</mule>
